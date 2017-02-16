@@ -4,7 +4,8 @@
 \alias{ms_erase}
 \title{Remove features or portions of features that fall inside a specified area}
 \usage{
-ms_erase(target, erase = NULL, bbox = NULL, force_FC = TRUE)
+ms_erase(target, erase = NULL, bbox = NULL, remove_slivers = FALSE,
+  force_FC = TRUE)
 }
 \arguments{
 \item{target}{the target layer from which to remove portions. One of:
@@ -23,6 +24,8 @@ ms_erase(target, erase = NULL, bbox = NULL, force_FC = TRUE)
 
 \item{bbox}{supply a bounding box instead of an erasing layer to remove from
 the target layer. Supply as a numeric vector: \code{c(minX, minY, maxX, maxY)}.}
+
+\item{remove_slivers}{Remove tiny sliver polygons created by erasing. (Default \code{FALSE})}
 
 \item{force_FC}{should the output be forced to be a \code{FeatureCollection} even
 if there are no attributes? Default \code{TRUE}.
@@ -55,7 +58,7 @@ points <- structure("{\\"type\\":\\"FeatureCollection\\",
   {\\"type\\":\\"Feature\\",\\"properties\\":{},\\"geometry\\":
   {\\"type\\":\\"Point\\",\\"coordinates\\":[61.0835,-40.7529]}},
   {\\"type\\":\\"Feature\\",\\"properties\\":{},\\"geometry\\":
-  {\\"type\\":\\"Point\\",\\"coordinates\\":[58.0202,-43.634]}}]}", 
+  {\\"type\\":\\"Point\\",\\"coordinates\\":[58.0202,-43.634]}}]}",
   class = c("json", "geo_json"))
 points <- geojson_sp(points)
 
@@ -81,4 +84,3 @@ out <- ms_erase(points, erase_poly)
 plot(out, add = TRUE)
 
 }
-
