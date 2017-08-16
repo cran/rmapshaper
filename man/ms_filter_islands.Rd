@@ -12,7 +12,8 @@ ms_filter_islands(input, min_area = NULL, min_vertices = NULL,
 \itemize{
  \item \code{geo_json} or \code{character} polygons;
  \item \code{geo_list} polygons;
- \item \code{SpatialPolygons*}
+ \item \code{SpatialPolygons*};
+ \item \code{sf} or \code{sfc} polygons object
  }}
 
 \item{min_area}{minimum area of polygons to retain. Area is calculated using
@@ -39,7 +40,7 @@ object with only specified features retained, in the same class as
 }
 \description{
 Remove small detached polygons, keeping those with a minimum area and/or a
-minimum number of vertices. Optionally remove null geomtries.
+minimum number of vertices. Optionally remove null geometries.
 }
 \examples{
 library(geojsonio)

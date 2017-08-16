@@ -5,7 +5,8 @@
 #' \itemize{
 #'  \item \code{geo_json} or \code{character} polygons;
 #'  \item \code{geo_list} polygons;
-#'  \item \code{SpatialPolygons*}
+#'  \item \code{SpatialPolygons*};
+#'  \item \code{sf} or \code{sfc} polygons object
 #'  }
 #' @param fields character vector of field names. If left as \code{NULL}
 #'   (default), external (unshared) boundaries are attributed as TYPE 0 and
@@ -99,7 +100,37 @@ ms_lines.SpatialPolygons <- function(input, fields = NULL, force_FC) {
 
   command <- make_lines_call(fields)
 
-  ms_sp(input, command, out_class = "SpatialLines")
+  ms_sp(input, command)
+}
+
+#' @export
+ms_lines.sf <- function(input, fields = NULL, force_FC) {
+
+  if (!all(fields %in% names(input))) {
+    stop("not all fields specified exist in input data")
+  }
+
+  lines_sf(input = input, fields = fields)
+}
+
+#' @export
+ms_lines.sfc <- function(input, fields = NULL, force_FC) {
+
+  if (!is.null(fields)) {
+    stop("Do not specify fields for sfc classes", call. = FALSE)
+  }
+
+  lines_sf(input = input, fields = fields)
+}
+
+lines_sf <- function(input, fields) {
+  if (!all(sf::st_is(input, c("POLYGON", "MULTIPOLYGON")))) {
+    stop("ms_lines only works with (MULTI)POLYGON")
+  }
+
+  command <- make_lines_call(fields)
+
+  ms_sf(input, command)
 }
 
 make_lines_call <- function(fields) {

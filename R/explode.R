@@ -9,7 +9,8 @@
 #' \itemize{
 #'  \item \code{geo_json} or \code{character} multipart lines, or polygons;
 #'  \item \code{geo_list} multipart lines, or polygons;
-#'  \item multipart \code{SpatialPolygons}, \code{SpatialLines}
+#'  \item multipart \code{SpatialPolygons}, \code{SpatialLines};
+#'  \item \code{sf} or \code{sfc} multipart lines, or polygons object
 #' }
 #' @param force_FC should the output be forced to be a \code{FeatureCollection} even
 #' if there are no attributes? Default \code{TRUE}.
@@ -92,4 +93,18 @@ ms_explode.SpatialLines <- function(input, force_FC = TRUE) {
 
 explode_sp <- function(input) {
  ms_sp(input = input, call = "-explode")
+}
+
+#' @export
+ms_explode.sf <- function(input, force_FC = TRUE) {
+  explode_sf(input = input)
+}
+
+#' @export
+ms_explode.sfc <- function(input, force_FC = TRUE) {
+  explode_sf(input = input)
+}
+
+explode_sf <- function(input) {
+  ms_sf(input = input, call = "-explode")
 }

@@ -1,13 +1,14 @@
 #' Remove small detached polygons (islands)
 #'
 #' Remove small detached polygons, keeping those with a minimum area and/or a
-#' minimum number of vertices. Optionally remove null geomtries.
+#' minimum number of vertices. Optionally remove null geometries.
 #'
 #' @param input spatial object to filter. One of:
 #' \itemize{
 #'  \item \code{geo_json} or \code{character} polygons;
 #'  \item \code{geo_list} polygons;
-#'  \item \code{SpatialPolygons*}
+#'  \item \code{SpatialPolygons*};
+#'  \item \code{sf} or \code{sfc} polygons object
 #'  }
 #' @param min_area minimum area of polygons to retain. Area is calculated using
 #'  planar geometry, except for the area of unprojected polygons, which is
@@ -101,6 +102,18 @@ ms_filter_islands_sp <- function(input, min_area = NULL, min_vertices = NULL) {
                                  drop_null_geometries = TRUE)
   ms_sp(input = input, call = cmd)
 }
+
+#' @export
+ms_filter_islands.sf <- function(input, min_area = NULL, min_vertices = NULL,
+                                 drop_null_geometries = TRUE, force_FC = TRUE) {
+
+  cmd <- make_filterislands_call(min_area = min_area, min_vertices = min_vertices,
+                                 drop_null_geometries = TRUE)
+  ms_sf(input = input, call = cmd)
+}
+
+#' @export
+ms_filter_islands.sfc <- ms_filter_islands.sf
 
 make_filterislands_call <- function(min_area, min_vertices, drop_null_geometries) {
 

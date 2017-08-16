@@ -6,7 +6,8 @@
 #' \itemize{
 #'  \item \code{geo_json} or \code{character} points, lines, or polygons;
 #'  \item \code{geo_list} points, lines, or polygons;
-#'  \item \code{SpatialPolygonsDataFrame}, \code{SpatialLinesDataFrame}, \code{SpatialPointsDataFrame}
+#'  \item \code{SpatialPolygonsDataFrame}, \code{SpatialLinesDataFrame}, \code{SpatialPointsDataFrame};
+#'  \item \code{sf} object
 #'  }
 #' @param fields character vector of fields to retain.
 #' @return object with only specified attributes retained, in the same class as
@@ -77,6 +78,20 @@ ms_filter_fields.SpatialLinesDataFrame <- function(input, fields) {
   ms_filter_fields_sp(input, fields)
 }
 
+#' @export
+ms_filter_fields.sf <- function(input, fields) {
+  if (!all(fields %in% names(input))) {
+    stop("Not all fields are in input")
+  }
+
+  # call <- make_filterfields_call(fields)
+  #
+  # ms_sf(input = input, call = call)
+
+  check_sf_pkg()
+
+  input[, fields, drop = FALSE]
+}
 
 ms_filter_fields_sp <- function(input, fields) {
 
@@ -102,3 +117,4 @@ make_filterfields_call <- function(fields) {
   call <- list("-filter-fields", paste0(fields, collapse = ","))
   call
 }
+

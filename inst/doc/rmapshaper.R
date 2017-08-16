@@ -25,6 +25,13 @@ states_gsimp <- gSimplify(states_sp, tol = 1, topologyPreserve = TRUE)
 plot(states_gsimp)
 
 ## ------------------------------------------------------------------------
+if (require(sf)) {
+  states_sf <- st_as_sf(states_sp)
+  states_sf_innerlines <- ms_innerlines(states_sf)
+  plot(states_sf_innerlines)
+}
+
+## ------------------------------------------------------------------------
 library(geojsonio)
 library(rmapshaper)
 library(sp)

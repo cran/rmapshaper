@@ -12,17 +12,19 @@ ms_clip(target, clip = NULL, bbox = NULL, remove_slivers = FALSE,
 \itemize{
  \item \code{geo_json} or \code{character} points, lines, or polygons;
  \item \code{geo_list} points, lines, or polygons;
- \item \code{SpatialPolygons}, \code{SpatialLines}, \code{SpatialPoints}
+ \item \code{SpatialPolygons}, \code{SpatialLines}, \code{SpatialPoints};
+ \item \code{sf} or \code{sfc} points, lines, or polygons object
  }}
 
 \item{clip}{the clipping layer (polygon). One of:
 \itemize{
  \item \code{geo_json} or \code{character} polygons;
  \item \code{geo_list} polygons;
- \item \code{SpatialPolygons*}
+ \item \code{SpatialPolygons*};
+ \item \code{sf} or \code{sfc} polygons object
 }}
 
-\item{bbox}{supply a bounding box instead of a clippling layer to extract from
+\item{bbox}{supply a bounding box instead of a clipping layer to extract from
 the target layer. Supply as a numeric vector: \code{c(minX, minY, maxX, maxY)}.}
 
 \item{remove_slivers}{Remove tiny sliver polygons created by clipping. (Default \code{FALSE})}

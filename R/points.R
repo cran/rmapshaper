@@ -8,7 +8,8 @@
 #' \itemize{
 #'  \item \code{geo_json} or \code{character} polygons;
 #'  \item \code{geo_list} polygons;
-#'  \item \code{SpatialPolygons*}
+#'  \item \code{SpatialPolygons*};
+#'  \item \code{sf} or \code{sfc} polygons object
 #'  }
 #' @param location either \code{"centroid"} or \code{"inner"}. If
 #'   \code{"centroid"}, creates points at the centroid of the largest ring of
@@ -100,8 +101,19 @@ ms_points.SpatialPolygons <- function(input, location = NULL, x = NULL, y = NULL
 
   cmd <- make_points_call(location = location, x = x, y = y)
 
-  ms_sp(input, cmd, out_class = "SpatialPoints")
+  ms_sp(input, cmd)
 }
+
+#' @export
+ms_points.sf <- function(input, location = NULL, x = NULL, y = NULL, force_FC) {
+
+  cmd <- make_points_call(location = location, x = x, y = y)
+
+  ms_sf(input, cmd)
+}
+
+#' @export
+ms_points.sfc <- ms_points.sf
 
 make_points_call <- function(location, x, y) {
   if (!is.null(location)) {

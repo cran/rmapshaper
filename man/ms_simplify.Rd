@@ -13,7 +13,8 @@ ms_simplify(input, keep = 0.05, method = NULL, weighting = 0.7,
 \itemize{
  \item \code{geo_json} or \code{character} polygons or lines;
  \item \code{geo_list} polygons or lines;
- \item \code{SpatialPolygons*} or \code{SpatialLines*}
+ \item \code{SpatialPolygons*} or \code{SpatialLines*};
+ \item \code{sf} or \code{sfc} polygons or lines object
  }}
 
 \item{keep}{proportion of points to retain (0-1; default 0.05)}
@@ -99,11 +100,9 @@ poly <- structure('{
 
 ms_simplify(poly, keep = 0.1)
 
-\dontrun{
-# With a SpatialPolygonsDataFrame. You will need the rworldmap package for this example:
-library("rworldmap")
-world <- getMap()
-ms_simplify(world)
-}
+# With a SpatialPolygonsDataFrame:
+
+poly_sp <- geojsonio::geojson_sp(poly)
+ms_simplify(poly_sp, keep = 0.5)
 
 }
