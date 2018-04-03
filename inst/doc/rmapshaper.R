@@ -25,11 +25,10 @@ states_gsimp <- gSimplify(states_sp, tol = 1, topologyPreserve = TRUE)
 plot(states_gsimp)
 
 ## ------------------------------------------------------------------------
-if (require(sf)) {
-  states_sf <- st_as_sf(states_sp)
-  states_sf_innerlines <- ms_innerlines(states_sf)
-  plot(states_sf_innerlines)
-}
+library(sf)
+states_sf <- st_as_sf(states_sp)
+states_sf_innerlines <- ms_innerlines(states_sf)
+plot(states_sf_innerlines)
 
 ## ------------------------------------------------------------------------
 library(geojsonio)
@@ -47,4 +46,13 @@ states_json %>%
   ms_simplify(keep_shapes = TRUE, explode = TRUE) %>% # Simplify polygon
   geojson_sp() %>% # Convert to SpatialPolygonsDataFrame
   plot(col = "blue") # plot
+
+## ----eval=nzchar(Sys.which("mapshaper"))---------------------------------
+check_sys_mapshaper()
+
+## ----eval=nzchar(Sys.which("mapshaper"))---------------------------------
+states_simp_internal <- ms_simplify(states_sf)
+states_simp_sys <- ms_simplify(states_sf, sys = TRUE)
+
+all.equal(states_simp_internal, states_simp_sys)
 
