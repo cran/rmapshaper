@@ -10,7 +10,7 @@
 #'  the geometries, a GeometryCollection (or Spatial object with no dataframe)
 #'  will be output.
 #' @param sys Should the system mapshaper be used instead of the bundled mapshaper? Gives
-#'   better performance on large files. Requires the mapshapr node package to be installed
+#'   better performance on large files. Requires the mapshaper node package to be installed
 #'   and on the PATH.
 #'
 #' @return geojson
@@ -43,7 +43,8 @@ apply_mapshaper_commands <- function(data, command, force_FC, sys = FALSE) {
     ## Create a JS object to hold the returned data
     ms$eval("var return_data;")
 
-    ms$call("mapshaper.applyCommands", command, as.character(data), V8::JS(callback()))
+    ms$call("mapshaper.applyCommands", command, as.character(data),
+            V8::JS(callback()))
     ret <- ms$get("return_data")
     ret <- class_geo_json(ret)
   }
@@ -166,6 +167,8 @@ ms_sf <- function(input, call, sys = FALSE) {
   if (has_data) {
     classes <- col_classes(input)
     geom_name <- attr(input, "sf_column")
+  } else {
+    input <- unname(input)
   }
 
   geojson <- sf_to_GeoJSON(input, file = sys)
@@ -258,7 +261,7 @@ check_sys_mapshaper <- function(verbose = TRUE) {
 ms_compact <- function(l) Filter(Negate(is.null), l)
 
 add_dummy_id_command <- function() {
-  "-each 'rmapshaperid = this.id'"
+  "-each 'rmapshaperid=this.id'"
 }
 
 class_geo_json <- function(x) {

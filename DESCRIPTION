@@ -1,7 +1,7 @@
 Type: Package
 Package: rmapshaper
 Title: Client for 'mapshaper' for 'Geospatial' Operations
-Version: 0.4.0
+Version: 0.4.1
 Authors@R: c(person("Andy", "Teucher", role = c("aut", "cre"),
     email = "andy.teucher@gmail.com"), 
     person("Kenton", "Russell", role = "aut", 
@@ -26,12 +26,12 @@ Imports: geojsonio (>= 0.6.0), geojsonlint (>= 0.2.0), jsonlite (>=
 Suggests: knitr, magrittr, rgeos, rmarkdown, testthat
 VignetteBuilder: knitr
 LazyData: TRUE
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 NeedsCompilation: no
-Packaged: 2018-04-03 19:47:30 UTC; ateucher
+Packaged: 2018-10-16 05:09:02 UTC; ateucher
 Author: Andy Teucher [aut, cre],
   Kenton Russell [aut] (JavaScript support),
   Matthew Bloch [cph] (mapshaper Javascript library)
 Maintainer: Andy Teucher <andy.teucher@gmail.com>
 Repository: CRAN
-Date/Publication: 2018-04-03 20:55:48 UTC
+Date/Publication: 2018-10-16 06:00:03 UTC
