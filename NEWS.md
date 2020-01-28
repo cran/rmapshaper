@@ -1,3 +1,11 @@
+# rmapshaper 0.4.3
+
+* Add checks, a package startup message, and helpful errors for the case when 
+  a user has an old version of `libv8` installed, as they do not support many
+  aspects of modern JavaScript (ES6). This appears to only impact `ms_erase()`
+  and `ms_clip()`.
+* Using `apply_mapshaper_commands()` no longer deletes a file when used on a local file (#99, #100)
+
 # rmapshaper 0.4.2
 
 * Added `rgdal` to `Suggests` so `ms_clip` and `ms_erase` can transform

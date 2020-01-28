@@ -1,18 +1,22 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- badges: start -->
 
 [![Travis-CI Build
 Status](https://travis-ci.org/ateucher/rmapshaper.svg?branch=master)](https://travis-ci.org/ateucher/rmapshaper)  
 [![AppVeyor Build
 Status](https://ci.appveyor.com/api/projects/status/github/ateucher/rmapshaper?branch=master&svg=true)](https://ci.appveyor.com/project/ateucher/rmapshaper)
 [![codecov.io](https://codecov.io/github/ateucher/rmapshaper/coverage.svg?branch=master)](https://codecov.io/github/ateucher/rmapshaper?branch=master)  
+[![R build
+status](https://github.com/ateucher/rmapshaper/workflows/R-CMD-check/badge.svg)](https://github.com/ateucher/rmapshaper)
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/rmapshaper)](https://cran.r-project.org/package=rmapshaper)
 [![CRAN Downloads per
 month](http://cranlogs.r-pkg.org/badges/rmapshaper)](https://cran.r-project.org/package=rmapshaper)
 [![CRAN total
 downloads](http://cranlogs.r-pkg.org/badges/grand-total/rmapshaper?color=lightgrey)](https://cran.r-project.org/package=rmapshaper)
+<!-- badges: end -->
 
 rmapshaper
-----------
+==========
 
 An R package providing access to the awesome
 [mapshaper](https://github.com/mbloch/mapshaper/) tool by Matthew Bloch,
@@ -62,12 +66,11 @@ If you run into any bugs or have any feature requests, please file an
 install.packages("rmapshaper")
 ```
 
-You can install the development version from github with `devtools`:
+You can install the development version from github with `remotes`:
 
 ``` r
-## install.packages("devtools")
-library(devtools)
-install_github("ropensci/geojsonio")
+## install.packages("remotes")
+library(remotes)
 install_github("ateucher/rmapshaper")
 ```
 

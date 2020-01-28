@@ -80,18 +80,18 @@ sys_mapshaper <- function(data, data2 = NULL, command) {
   if (read_write) {
     in_data_file <- tempfile(fileext = ".geojson")
     readr::write_file(data, in_data_file)
+    on.exit(unlink(in_data_file))
+
     if (!is.null(data2)) {
       in_data_file2 <- tempfile(fileext = ".geojson")
       readr::write_file(data2, in_data_file2)
+      on.exit(unlink(in_data_file2), add = TRUE)
     }
+
   } else {
     in_data_file <- data
     in_data_file2 <- data2
   }
-
-  on.exit(unlink(in_data_file))
-
-  if (!is.null(data2)) on.exit(unlink(in_data_file2), add = TRUE)
 
   out_data_file <- tempfile(fileext = ".geojson")
   if (!is.null(data2)) {
@@ -382,4 +382,22 @@ restore_classes <- function(df, classes) {
     }
   }
   df
+}
+
+stop_for_old_v8 <- function() {
+  if (check_v8_major_version() < 6L) {
+  # nocov start
+    stop(
+      "Warning: v8 Engine is version ", V8::engine_info()[["version"]],
+      " but version >=6 is required for this function. See",
+      " https://github.com/jeroen/V8 for help installing a modern version",
+      " of v8 on your operating system.")
+  }
+  # nocov end
+}
+
+check_v8_major_version <- function() {
+  engine_version <- V8::engine_info()[["version"]]
+  major_version <- as.integer(strsplit(engine_version, "\\.")[[1]][1])
+  major_version
 }

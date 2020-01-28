@@ -30,7 +30,7 @@ states_sf <- st_as_sf(states_sp)
 states_sf_innerlines <- ms_innerlines(states_sf)
 plot(states_sf_innerlines)
 
-## -----------------------------------------------------------------------------
+## ----eval=rmapshaper:::check_v8_major_version() >= 6--------------------------
 library(geojsonio)
 library(rmapshaper)
 library(sp)
