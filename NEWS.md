@@ -1,3 +1,10 @@
+# rmapshaper 0.4.6
+
+* Fixed a long-standing issue where `units` columns in `sf` objects would cause failures; all numeric columns of class `"units"` are now converted to numeric before running through mapshaper commands. (#116, thanks @Robinlovelace)
+* Added a default value for `force_FC` in `apply_mapshaper_commands()`. The default value is `TRUE` (#120, thanks @dblodgett-usgs)
+* Documentation fix in `check_sys_mapshaper()` - fixed description of return value (#117, thanks @dblodgett-usgs).
+* Included an example of setting memory allocation when using the system mapshaper in README (#114, thanks @baldeagle).
+
 # rmapshaper 0.4.5
 
 * Fixed a bug where functions would fail when there was a space in user's `tmpdir()`
@@ -9,7 +16,7 @@ larger memory use. Default 8GB can be specified in new argument `sys_mem` (#94, 
 
 # rmapshaper 0.4.4
 
-* Small fixes for compatability with sf >= 0.9
+* Small fixes for compatibility with sf >= 0.9
 
 # rmapshaper 0.4.3
 

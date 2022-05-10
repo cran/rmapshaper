@@ -17,7 +17,8 @@
 #'
 #' @return geojson
 #' @export
-apply_mapshaper_commands <- function(data, command, force_FC, sys = FALSE, sys_mem = 8) {
+#'
+apply_mapshaper_commands <- function(data, command, force_FC = TRUE, sys = FALSE, sys_mem = 8) {
 
   data <- as.character(data)
 
@@ -165,7 +166,7 @@ GeoJSON_to_sp <- function(geojson, proj = NULL) {
 }
 
 sp_to_GeoJSON <- function(sp, file = FALSE){
-  proj <- sp::proj4string(sp)
+  proj <- slot(sp, "proj4string")
   if (file) {
     js <- sf_sp_to_tempfile(sp)
   } else {
@@ -183,6 +184,7 @@ ms_sf <- function(input, call, sys = FALSE, sys_mem = 8) {
   if (has_data) {
     classes <- col_classes(input)
     geom_name <- attr(input, "sf_column")
+    input <- ms_de_unit(input)
   } else {
     input <- unname(input)
   }
@@ -256,7 +258,7 @@ sf_sp_to_tempfile <- function(obj) {
 #' @param command either "mapshaper-xl" (default) or "mapshaper"
 #' @param verbose Print a message stating mapshaper's current version? Default `TRUE`
 #'
-#' @return TRUE (with a message) if appropriate version is installed, otherwise throws an error
+#' @return character path to mapshaper executable if appropriate version is installed, otherwise throws an error
 #' @export
 check_sys_mapshaper <- function(command = "mapshaper-xl", verbose = TRUE) {
   if (!command %in% c("mapshaper-xl", "mapshaper")) {
@@ -405,7 +407,7 @@ restore_classes <- function(df, classes) {
     if ("factor" %in% cls) {
       df[[n]] <- factor(df[[n]], levels = classes[[n]]$levels,
                            ordered = classes[[n]]$ordered)
-    } else {
+    } else if (!"units" %in% cls) { # Skip units columns... TODO: Fix units parsing on return
       as_fun <- paste0("as.", cls[1])
       tryCatch({
         df[[n]] <- eval(call(as_fun, df[[n]]))

@@ -219,3 +219,18 @@ make_simplify_call <- function(keep, method, weighting, keep_shapes, no_repair,
 
   call
 }
+
+ms_de_unit <- function(input) {
+  input_columns_units <- vapply(input, inherits, "units", FUN.VALUE = logical(1))
+  if(any(input_columns_units)) {
+    units_column_names <- names(input_columns_units)[input_columns_units]
+    msg <- paste0("Coercing these 'units' columns to class numeric: ",
+                  paste(units_column_names, collapse = ", "))
+    warning(msg)
+
+    for(i in units_column_names) {
+      input[[i]] <- as.numeric(input[[i]])
+    }
+  }
+  input
+}
