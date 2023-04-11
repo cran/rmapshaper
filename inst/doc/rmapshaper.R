@@ -1,57 +1,50 @@
 ## -----------------------------------------------------------------------------
-library(geojsonio)
 library(rmapshaper)
-library(sp)
-
-states_json <- geojson_json(states, geometry = "polygon", group = "group")
-
-## -----------------------------------------------------------------------------
-states_sp <- geojson_sp(states_json)
-
-## Plot the original
-plot(states_sp)
-
-## -----------------------------------------------------------------------------
-states_simp <- ms_simplify(states_sp)
-plot(states_simp)
-
-## -----------------------------------------------------------------------------
-states_very_simp <- ms_simplify(states_sp, keep = 0.001)
-plot(states_very_simp)
-
-## -----------------------------------------------------------------------------
-library(rgeos)
-states_gsimp <- gSimplify(states_sp, tol = 1, topologyPreserve = TRUE)
-plot(states_gsimp)
-
-## -----------------------------------------------------------------------------
 library(sf)
-states_sf <- st_as_sf(states_sp)
-states_sf_innerlines <- ms_innerlines(states_sf)
-plot(states_sf_innerlines)
+
+file <- system.file("gpkg/nc.gpkg", package = "sf")
+nc_sf <- read_sf(file)
+
+## -----------------------------------------------------------------------------
+plot(nc_sf["FIPS"])
+
+## -----------------------------------------------------------------------------
+nc_simp <- ms_simplify(nc_sf)
+plot(nc_simp["FIPS"])
+
+## -----------------------------------------------------------------------------
+nc_very_simp <- ms_simplify(nc_sf, keep = 0.001)
+plot(nc_very_simp["FIPS"])
+
+## -----------------------------------------------------------------------------
+
+nc_stsimp <- st_simplify(nc_sf, preserveTopology = TRUE, dTolerance = 10000) # dTolerance specified in meters
+plot(nc_stsimp["FIPS"])
+
+## -----------------------------------------------------------------------------
+nc_sf_innerlines <- ms_innerlines(nc_sf)
+plot(nc_sf_innerlines)
 
 ## ----eval=rmapshaper:::check_v8_major_version() >= 6--------------------------
-library(geojsonio)
+library(geojsonsf)
 library(rmapshaper)
-library(sp)
-library(magrittr)
+library(sf)
 
-## First convert 'states' dataframe from geojsonio pkg to json
-states_json <- geojson_json(states, lat = "lat", lon = "long", group = "group", 
-                            geometry = "polygon")
+## First convert 'states' dataframe from geojsonsf pkg to json
 
-states_json %>% 
-  ms_erase(bbox = c(-107, 36, -101, 42)) %>% # Cut a big hole in the middle
-  ms_dissolve() %>% # Dissolve state borders
-  ms_simplify(keep_shapes = TRUE, explode = TRUE) %>% # Simplify polygon
-  geojson_sp() %>% # Convert to SpatialPolygonsDataFrame
+nc_sf %>% 
+  sf_geojson() |> 
+  ms_erase(bbox = c(-80, 35, -79, 35.5)) |>  # Cut a big hole in the middle
+  ms_dissolve() |>  # Dissolve county borders
+  ms_simplify(keep_shapes = TRUE, explode = TRUE) |> # Simplify polygon
+  geojson_sf() |> # Convert to sf object
   plot(col = "blue") # plot
 
 ## ----eval=nzchar(Sys.which("mapshaper"))--------------------------------------
 check_sys_mapshaper()
 
 ## ----eval=nzchar(Sys.which("mapshaper"))--------------------------------------
-states_simp_sys <- ms_simplify(states_sf, sys = TRUE)
+nc_simp_sys <- ms_simplify(nc_sf, sys = TRUE)
 
-plot(states_simp_sys[, "region"])
+plot(nc_simp_sys[, "FIPS"])
 
