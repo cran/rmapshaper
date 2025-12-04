@@ -11,7 +11,7 @@
 #'  \item multipart \code{SpatialPolygons}, \code{SpatialLines};
 #'  \item \code{sf} or \code{sfc} multipart lines, or polygons object
 #' }
-#' @inheritDotParams apply_mapshaper_commands force_FC sys sys_mem quiet
+#' @inheritDotParams apply_mapshaper_commands force_FC sys sys_mem quiet gj2008
 #'
 #' @return same class as input
 #'
@@ -46,7 +46,6 @@ ms_explode.character <- function(input, ...) {
   input <- check_character_input(input)
 
   apply_mapshaper_commands(data = input, command = "-explode", ...)
-
 }
 
 #' @export
@@ -74,7 +73,7 @@ ms_explode.SpatialLines <- function(input, ...) {
 # }
 
 explode_sp <- function(input, ...) {
- ms_sp(input = input, call = "-explode", ...)
+  ms_sp(input = input, call = "-explode", ...)
 }
 
 #' @export

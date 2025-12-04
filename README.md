@@ -1,18 +1,19 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
 <!-- badges: start -->
 
-[![Codecov test
-coverage](https://codecov.io/gh/ateucher/rmapshaper/branch/master/graph/badge.svg)](https://app.codecov.io/gh/ateucher/rmapshaper?branch=master)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/rmapshaper)](https://cran.r-project.org/package=rmapshaper)
 [![CRAN Downloads per
 month](http://cranlogs.r-pkg.org/badges/rmapshaper)](https://cran.r-project.org/package=rmapshaper)
 [![CRAN total
 downloads](http://cranlogs.r-pkg.org/badges/grand-total/rmapshaper?color=lightgrey)](https://cran.r-project.org/package=rmapshaper)
 [![R-CMD-check](https://github.com/ateucher/rmapshaper/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ateucher/rmapshaper/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/ateucher/rmapshaper/graph/badge.svg)](https://app.codecov.io/gh/ateucher/rmapshaper)
 <!-- badges: end -->
 
-# rmapshaper
+# rmapshaper <a href="http://andyteucher.ca/rmapshaper/"><img src="man/figures/logo.png" align="right" height="139" alt="rmapshaper website" /></a>
 
 An R package providing access to the awesome
 [mapshaper](https://github.com/mbloch/mapshaper/) tool by Matthew Bloch,
@@ -82,7 +83,7 @@ the `sf` package and read it in as an `sf` object:
 ``` r
 library(rmapshaper)
 library(sf)
-#> Linking to GEOS 3.11.0, GDAL 3.5.3, PROJ 9.1.0; sf_use_s2() is TRUE
+#> Linking to GEOS 3.14.1, GDAL 3.12.0, PROJ 9.7.0; sf_use_s2() is TRUE
 
 file <- system.file("gpkg/nc.gpkg", package = "sf")
 nc_sf <- read_sf(file)
@@ -94,7 +95,7 @@ Plot the original:
 plot(nc_sf["FIPS"])
 ```
 
-![](tools/readme/unnamed-chunk-3-1.png)<!-- -->
+![](man/figures/unnamed-chunk-3-1.png)<!-- -->
 
 Now simplify using default parameters, then plot the simplified North
 Carolina counties:
@@ -104,7 +105,7 @@ nc_simp <- ms_simplify(nc_sf)
 plot(nc_simp["FIPS"])
 ```
 
-![](tools/readme/unnamed-chunk-4-1.png)<!-- -->
+![](man/figures/unnamed-chunk-4-1.png)<!-- -->
 
 You can see that even at very high levels of simplification, the
 mapshaper simplification algorithm preserves the topology, including
@@ -116,7 +117,7 @@ nc_very_simp <- ms_simplify(nc_sf, keep = 0.001)
 plot(nc_very_simp["FIPS"])
 ```
 
-![](tools/readme/unnamed-chunk-5-1.png)<!-- -->
+![](man/figures/unnamed-chunk-5-1.png)<!-- -->
 
 Compare this to the output using `sf::st_simplify`, where overlaps and
 gaps are evident:
@@ -127,7 +128,7 @@ nc_stsimp <- st_simplify(nc_sf, preserveTopology = TRUE, dTolerance = 10000) # d
 plot(nc_stsimp["FIPS"])
 ```
 
-![](tools/readme/unnamed-chunk-6-1.png)<!-- -->
+![](man/figures/unnamed-chunk-6-1.png)<!-- -->
 
 This time we’ll demonstrate the `ms_innerlines` function:
 
@@ -136,7 +137,7 @@ nc_sf_innerlines <- ms_innerlines(nc_sf)
 plot(nc_sf_innerlines)
 ```
 
-![](tools/readme/unnamed-chunk-7-1.png)<!-- -->
+![](man/figures/unnamed-chunk-7-1.png)<!-- -->
 
 All of the functions are quite fast with `geojson` character objects.
 They are slower with the `sf` and `Spatial` classes due to internal
@@ -155,16 +156,16 @@ library(sf)
 
 ## First convert 'states' dataframe from geojsonsf pkg to json
 
-nc_sf %>% 
-  sf_geojson() |> 
-  ms_erase(bbox = c(-80, 35, -79, 35.5)) |>  # Cut a big hole in the middle
-  ms_dissolve() |>  # Dissolve county borders
+nc_sf %>%
+  sf_geojson() |>
+  ms_erase(bbox = c(-80, 35, -79, 35.5)) |> # Cut a big hole in the middle
+  ms_dissolve() |> # Dissolve county borders
   ms_simplify(keep_shapes = TRUE, explode = TRUE) |> # Simplify polygon
   geojson_sf() |> # Convert to sf object
   plot(col = "blue") # plot
 ```
 
-![](tools/readme/unnamed-chunk-8-1.png)<!-- -->
+![](man/figures/unnamed-chunk-8-1.png)<!-- -->
 
 ### Using the system mapshaper
 
@@ -178,7 +179,7 @@ First make sure you have mapshaper installed:
 
 ``` r
 check_sys_mapshaper()
-#> mapshaper version 0.6.25 is installed and on your PATH
+#> mapshaper version 0.6.113 is installed and on your PATH
 #>                     mapshaper-xl 
 #> "/opt/homebrew/bin/mapshaper-xl"
 ```
@@ -193,14 +194,14 @@ Then you can use the `sys` argument in any rmapshaper function:
 
 ``` r
 nc_simp_internal <- ms_simplify(nc_sf)
-nc_simp_sys <- ms_simplify(nc_sf, sys = TRUE, sys_mem=8) #sys_mem specifies the amount of memory to use in Gb.  It defaults to 8 if omitted. 
+nc_simp_sys <- ms_simplify(nc_sf, sys = TRUE, sys_mem = 8) #sys_mem specifies the amount of memory to use in Gb.  It defaults to 8 if omitted.
 
-par(mfrow = c(1,2))
+par(mfrow = c(1, 2))
 plot(st_geometry(nc_simp_internal), main = "internal")
 plot(st_geometry(nc_simp_sys), main = "system")
 ```
 
-![](tools/readme/unnamed-chunk-10-1.png)<!-- -->
+![](man/figures/unnamed-chunk-10-1.png)<!-- -->
 
 ### Thanks
 

@@ -1,3 +1,19 @@
+# rmapshaper 0.6.0
+
+* Updated bundled mapshaper version to `v0.6.113` (#179).
+* Bumped minimum `geojsonsf` version to 2.0.5 to handle logical properties correctly (#177).
+* `v8_version()` now works correctly in startup checks (#173, thanks @elipousson).
+* Added a more proactive startup message regarding old v8 engines, as the new 
+  bundled mapshaper library will not work with libv8 < 8.1.307.30 (#140).
+* Added pkgdown site at https://andyteucher.ca/rmapshaper/
+* Setting `force_FC = TRUE` no longer adds a `rmapshaperid` id column. `force_FC` 
+  is also better respected across functions and methods; previously it was 
+  somewhat inconsistent (#151).
+* Added new argument `gj2008` to all functions, which if `TRUE` outputs geojson following the old
+  (2008) specification. Polygon rings are CW and holes are CCW, which is the
+  opposite of the default RFC 7946-compatible output. This is required by D3, and
+  packages that depend on it, like plotly (#167, #168).
+
 # rmapshaper 0.5.0
 
 This is a fairly major release with much of the internal plumbing changed. I have tried to keep user-facing changes to a minimum, but please report any issues to https://github.com/ateucher/rmapshaper/issues.
@@ -96,6 +112,3 @@ https://github.com/ropensci/geojsonio/issues/128)
 # rmapshaper 0.1.0
 
 * Initial release
-
-
-

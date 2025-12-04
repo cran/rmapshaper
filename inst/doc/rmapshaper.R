@@ -25,7 +25,7 @@ plot(nc_stsimp["FIPS"])
 nc_sf_innerlines <- ms_innerlines(nc_sf)
 plot(nc_sf_innerlines)
 
-## ----eval=rmapshaper:::check_v8_major_version() >= 6--------------------------
+## ----eval=rmapshaper:::v8_version() >= '6'------------------------------------
 library(geojsonsf)
 library(rmapshaper)
 library(sf)

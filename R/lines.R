@@ -1,4 +1,3 @@
-
 #' Convert polygons to topological boundaries (lines)
 #'
 #' @param input input polygons object to convert to inner lines. One of:
@@ -13,7 +12,7 @@
 #'   intermediate level of hierarchy at TYPE 1, with the lowest-level internal
 #'   boundaries set to TYPE 2. Supplying a character vector of field names adds
 #'   additional levels of hierarchy.
-#' @inheritDotParams apply_mapshaper_commands force_FC sys sys_mem quiet
+#' @inheritDotParams apply_mapshaper_commands force_FC sys sys_mem quiet gj2008
 #'
 #' @return topological boundaries as lines, in the same class as the input
 #'
@@ -50,7 +49,8 @@
 #'
 #' @export
 ms_lines <- function(input, fields = NULL, ...) {
-  if (!is.null(fields) && !is.character(fields)) stop("fields must be a character vector of field names")
+  if (!is.null(fields) && !is.character(fields))
+    stop("fields must be a character vector of field names")
   UseMethod("ms_lines")
 }
 
@@ -61,7 +61,6 @@ ms_lines.character <- function(input, fields = NULL, ...) {
   command <- make_lines_call(fields)
 
   apply_mapshaper_commands(data = input, command = command, ...)
-
 }
 
 #' @export
@@ -73,7 +72,6 @@ ms_lines.json <- function(input, fields = NULL, ...) {
 
 #' @export
 ms_lines.SpatialPolygons <- function(input, fields = NULL, ...) {
-
   if (.hasSlot(input, "data")) {
     if (!all(fields %in% names(input@data))) {
       stop("not all fields specified exist in input data")
@@ -87,7 +85,6 @@ ms_lines.SpatialPolygons <- function(input, fields = NULL, ...) {
 
 #' @export
 ms_lines.sf <- function(input, fields = NULL, ...) {
-
   if (!all(fields %in% names(input))) {
     stop("not all fields specified exist in input data")
   }
@@ -97,7 +94,6 @@ ms_lines.sf <- function(input, fields = NULL, ...) {
 
 #' @export
 ms_lines.sfc <- function(input, fields = NULL, ...) {
-
   if (!is.null(fields)) {
     stop("Do not specify fields for sfc classes", call. = FALSE)
   }
@@ -116,11 +112,11 @@ lines_sf <- function(input, fields, ...) {
 }
 
 make_lines_call <- function(fields) {
-  if(!is.null(fields) && !is.character(fields)) stop("fields must be a character vector of field names")
+  if (!is.null(fields) && !is.character(fields))
+    stop("fields must be a character vector of field names")
 
   fields <- paste0(fields, collapse = ",")
 
   call <- list("-lines", fields)
   call
 }
-

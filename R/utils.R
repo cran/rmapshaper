@@ -1,20 +1,27 @@
 #' Apply a mapshaper command string to a geojson object
 #'
-#' @param data character containing geojson or path to geojson file.
-#' If a file path, \code{sys} must be true.
+#' @param data character containing geojson or path to geojson file. If a file
+#'   path, \code{sys} must be true.
 #' @param command valid mapshaper command string
-#' @param force_FC should the output be forced to be a FeatureCollection (or sf object or
-#'   Spatial*DataFrame) even if there are no attributes? Default \code{TRUE}. If FALSE and
-#'   there are no attributes associated with the geometries, a
-#'   GeometryCollection (or Spatial object with no dataframe, or sfc) will be output.
-#' @param sys Should the system mapshaper be used instead of the bundled mapshaper? Gives
-#'   better performance on large files. Requires the mapshaper node package to be installed
-#'   and on the PATH.
-#' @param sys_mem How much memory (in GB) should be allocated if using the system
-#'   mapshaper (`sys = TRUE`)? Default 8. Ignored if `sys = FALSE`.
-#'   This can also be set globally with the option `"mapshaper.sys_mem"`
-#' @param quiet If `sys = TRUE`, should the mapshaper messages be silenced? Default `FALSE`.
-#'   This can also be set globally with the option `"mapshaper.sys_quiet"`
+#' @param force_FC should the output be forced to be a FeatureCollection (or sf
+#'   object or Spatial*DataFrame) even if there are no attributes? Default
+#'   \code{TRUE}. If FALSE and there are no attributes associated with the
+#'   geometries, a GeometryCollection (or Spatial object with no dataframe, or
+#'   sfc) will be output.
+#' @param sys Should the system mapshaper be used instead of the bundled
+#'   mapshaper? Gives better performance on large files. Requires the mapshaper
+#'   node package to be installed and on the PATH.
+#' @param sys_mem How much memory (in GB) should be allocated if using the
+#'   system mapshaper (`sys = TRUE`)? Default 8. Ignored if `sys = FALSE`. This
+#'   can also be set globally with the option `"mapshaper.sys_mem"`
+#' @param quiet If `sys = TRUE`, should the mapshaper messages be silenced?
+#'   Default `FALSE`. This can also be set globally with the option
+#'   `"mapshaper.sys_quiet"`
+#' @param gj2008 Generate output that is consistent with the pre-RFC 7946
+#'   GeoJSON spec (dating to 2008). Polygon rings are CW and holes are CCW,
+#'   which is the opposite of the default RFC 7946-compatible output. This should
+#'   be rarely needed, though may be useful when preparing data for D3-based
+#'   data visualizations (such as `plotly::plot_ly()`). Default `FALSE`
 #'
 #' @return geojson
 #' @export
@@ -23,45 +30,72 @@
 #' nc <- sf::read_sf(system.file("gpkg/nc.gpkg", package = "sf"))
 #' rmapshaper::apply_mapshaper_commands(geojsonsf::sf_geojson(nc), "-clean")
 #'
-apply_mapshaper_commands <- function(data, command, force_FC = TRUE, sys = FALSE,
-                                     sys_mem = getOption("mapshaper.sys_mem", default = 8),
-                                     quiet = getOption("mapshaper.sys_quiet", default = FALSE)) {
-  if (!is.logical(force_FC)) stop("force_FC must be TRUE or FALSE", call. = FALSE)
-  if (!is.logical(sys)) stop("sys must be TRUE or FALSE", call. = FALSE)
-  if (!is.numeric(sys_mem)) stop("sys_mem must be numeric", call. = FALSE)
+apply_mapshaper_commands <- function(
+  data,
+  command,
+  force_FC = TRUE,
+  sys = FALSE,
+  sys_mem = getOption("mapshaper.sys_mem", default = 8),
+  quiet = getOption("mapshaper.sys_quiet", default = FALSE),
+  gj2008 = FALSE
+) {
+  if (!is.logical(force_FC)) {
+    stop("force_FC must be TRUE or FALSE", call. = FALSE)
+  }
+  if (!is.logical(sys)) {
+    stop("sys must be TRUE or FALSE", call. = FALSE)
+  }
+  if (!is.numeric(sys_mem)) {
+    stop("sys_mem must be numeric", call. = FALSE)
+  }
+  if (!is.logical(gj2008)) {
+    stop("gj2008 must be TRUE or FALSE", call. = FALSE)
+  }
 
   data <- as.character(data)
 
-  if (!is.numeric(sys_mem) )
-
-  if (nchar(data) < 1000L && file.exists(data) && !sys) {
-    stop("'data' points to a file on disk but you did not specify to use
-         the system mapshaper. To do so set sys = TRUE")
+  if (!is.numeric(sys_mem)) {
+    if (nchar(data) < 1000L && file.exists(data) && !sys) {
+      stop(
+        "'data' points to a file on disk but you did not specify to use
+         the system mapshaper. To do so set sys = TRUE"
+      )
+    }
   }
 
-  ## Add a dummy id to make sure object is a FeatureCollection, otherwise
-  ## a GeometryCollection will be returned, which readOGR doesn't usually like.
-  ## See discussion here: https://github.com/mbloch/mapshaper/issues/99.
-  if (force_FC) {
-    add_id <- add_dummy_id_command(sys = sys)
-  } else {
-    add_id <- NULL
-  }
-
-  command <- c(command, add_id)
-
-  command <- paste(ms_compact(command), collapse = " ")
+  # command <- paste(ms_compact(command), collapse = " ")
 
   if (sys) {
-    ret <- sys_mapshaper(data = data, command = command, sys_mem = sys_mem, quiet = quiet)
+    ret <- sys_mapshaper(
+      data = data,
+      command = command,
+      force_FC = force_FC,
+      sys_mem = sys_mem,
+      quiet = quiet,
+      gj2008 = gj2008
+    )
   } else {
+    out_flags <- NULL
+
+    if (force_FC || gj2008) {
+      add_id <- if (force_FC) fc_command() else NULL
+      gj2008 <- if (gj2008) "gj2008" else NULL
+      out_flags <- paste("-o", add_id, gj2008)
+    }
+
+    command <- c(
+      command,
+      out_flags
+    )
+
+    command <- paste(ms_compact(command), collapse = " ")
+
     ms <- ms_make_ctx()
 
     ## Create a JS object to hold the returned data
     ms$eval("var return_data;")
 
-    ms$call("mapshaper.applyCommands", command, data,
-            V8::JS(callback()))
+    ms$call("mapshaper.applyCommands", command, data, V8::JS(callback()))
 
     # TODO: New syntax for applyCommands:
     # Useful for clip and erase so can define two inputs
@@ -75,19 +109,26 @@ apply_mapshaper_commands <- function(data, command, force_FC = TRUE, sys = FALSE
     ret <- class_geo_json(ret)
   }
   ret
-
 }
 
 ms_make_ctx <- function() {
   ctx <- V8::v8()
-  ctx$source(system.file("mapshaper/mapshaper-browserify.min.js",
-                         package = "rmapshaper"))
+  ctx$source(system.file(
+    "mapshaper/mapshaper-browserify.min.js",
+    package = "rmapshaper"
+  ))
   ctx
 }
 
-sys_mapshaper <- function(data, data2 = NULL, command, force_FC = FALSE, # default FALSE as in most cases it is added in apply_mapshaper_commands
-                          sys_mem = getOption("mapshaper.sys_mem", default = 8),
-                          quiet = getOption("mapshaper.sys_quiet", default = FALSE)) {
+sys_mapshaper <- function(
+  data,
+  data2 = NULL,
+  command,
+  force_FC = TRUE, # default FALSE as in most cases it is added in apply_mapshaper_commands
+  sys_mem = getOption("mapshaper.sys_mem", default = 8),
+  quiet = getOption("mapshaper.sys_quiet", default = FALSE),
+  gj2008 = FALSE
+) {
   # Get full path to sys mapshaper, use mapshaper-xl
   ms_path <- paste0(check_sys_mapshaper("mapshaper-xl", verbose = FALSE))
 
@@ -112,19 +153,18 @@ sys_mapshaper <- function(data, data2 = NULL, command, force_FC = FALSE, # defau
 
   out_data_file <- temp_geojson()
 
-  each <- if (force_FC) {
-    add_dummy_id_command(sys = TRUE)
-  } else {
-    NULL
-  }
+  out_fc <- if (force_FC) fc_command() else NULL
+  gj2008 <- if (gj2008) "gj2008" else NULL
 
   cmd_args <- c(
     sys_mem,
     shQuote(in_data_file),
-    command,
+    command <- paste(ms_compact(command), collapse = " "),
     shQuote(in_data_file2), # will be NULL if no data2/in_data_file2
-    each, # will be NULL if force_FC is FALSE
-    "-o", shQuote(out_data_file),
+    "-o",
+    shQuote(out_data_file),
+    out_fc, # will be NULL if force_FC is FALSE
+    gj2008, # will be NULL if gj2008 is FALSE
     if (quiet) "-quiet"
   )
 
@@ -154,10 +194,15 @@ return_data = data;
 }"
 }
 
-ms_sp <- function(input, call, sys = FALSE,
-                  sys_mem = getOption("mapshaper.sys_mem", default = 8),
-                  quiet = getOption("mapshaper.sys_quiet", default = FALSE)) {
-
+ms_sp <- function(
+  input,
+  call,
+  sys = FALSE,
+  force_FC = TRUE,
+  sys_mem = getOption("mapshaper.sys_mem", default = 8),
+  quiet = getOption("mapshaper.sys_quiet", default = FALSE),
+  gj2008 = FALSE
+) {
   has_data <- .hasSlot(input, "data")
   if (has_data) {
     classes <- col_classes(input@data)
@@ -165,20 +210,22 @@ ms_sp <- function(input, call, sys = FALSE,
 
   geojson <- sp_to_GeoJSON(input, file = sys)
 
-  ret <- apply_mapshaper_commands(data = geojson, command = call, force_FC = TRUE, sys = sys, sys_mem = sys_mem, quiet = quiet)
-
-  if (!sys & grepl('^\\{"type":"GeometryCollection"', ret)) {
-    stop("Cannot convert result to a Spatial* object.
-         It is likely too much simplification was applied and all features
-         were reduced to null.", call. = FALSE)
-  }
+  ret <- apply_mapshaper_commands(
+    data = geojson,
+    command = call,
+    force_FC = force_FC,
+    sys = sys,
+    sys_mem = sys_mem,
+    quiet = quiet,
+    gj2008 = gj2008
+  )
 
   ret <- GeoJSON_to_sp(ret, crs = attr(geojson, "crs"))
 
   # remove data slot if input didn't have one (default out_class is the class of the input)
   if (!has_data) {
     ret <- as(ret, gsub("DataFrame$", "", class(ret)[1]))
-  }  else {
+  } else {
     ret@data <- restore_classes(ret@data, classes)
   }
 
@@ -187,11 +234,18 @@ ms_sp <- function(input, call, sys = FALSE,
 
 GeoJSON_to_sp <- function(geojson, crs = NULL) {
   x_sf <- GeoJSON_to_sf(geojson, crs)
+  if (nrow(x_sf) == 0) {
+    stop(
+      "Cannot convert result to a Spatial* object.
+         It is likely too much simplification was applied and all features
+         were reduced to null.",
+      call. = FALSE
+    )
+  }
   as(x_sf, "Spatial")
 }
 
-sp_to_GeoJSON <- function(sp, file = FALSE){
-
+sp_to_GeoJSON <- function(sp, file = FALSE) {
   crs <- methods::slot(sp, "proj4string")
 
   if (file) {
@@ -205,11 +259,16 @@ sp_to_GeoJSON <- function(sp, file = FALSE){
 }
 
 ## Utilties for sf
-ms_sf <- function(input, call, sys = FALSE,
-                  sys_mem = getOption("mapshaper.sys_mem", default = 8),
-                  quiet = getOption("mapshaper.sys_quiet", default = FALSE)) {
-
-  has_data <- is(input, "sf")
+ms_sf <- function(
+  input,
+  call,
+  sys = FALSE,
+  force_FC = TRUE,
+  sys_mem = getOption("mapshaper.sys_mem", default = 8),
+  quiet = getOption("mapshaper.sys_quiet", default = FALSE),
+  gj2008 = FALSE
+) {
+  has_data <- inherits(input, "sf")
   if (has_data) {
     classes <- col_classes(input)
     geom_name <- attr(input, "sf_column")
@@ -220,12 +279,23 @@ ms_sf <- function(input, call, sys = FALSE,
 
   geojson <- sf_to_GeoJSON(input, file = sys)
 
-  ret <- apply_mapshaper_commands(data = geojson, command = call, force_FC = TRUE, sys = sys, sys_mem = sys_mem, quiet = quiet)
+  ret <- apply_mapshaper_commands(
+    data = geojson,
+    command = call,
+    force_FC = force_FC,
+    sys = sys,
+    sys_mem = sys_mem,
+    quiet = quiet,
+    gj2008 = gj2008
+  )
 
   if (!sys & grepl('^\\{"type":"GeometryCollection"', ret)) {
-    stop("Cannot convert result to an sf object.
+    stop(
+      "Cannot convert result to an sf object.
          It is likely too much simplification was applied and all features
-         were reduced to null.", call. = FALSE)
+         were reduced to null.",
+      call. = FALSE
+    )
   }
 
   ret <- GeoJSON_to_sf(ret, crs = attr(geojson, "crs"))
@@ -256,20 +326,22 @@ GeoJSON_to_sf <- function(geojson, crs = NULL) {
 sf_to_GeoJSON <- function(sf, file = FALSE) {
   crs <- sf::st_crs(sf)
 
-    js <- if (inherits(sf, "sf")) {
-      geojsonsf::sf_geojson(sf, simplify = FALSE)
-    } else {
-      json <- geojsonsf::sfc_geojson(sf)
-      paste0("{\"type\":\"GeometryCollection\",\"geometries\":[",
-             paste(json, collapse = ","),
-             "]}")
-    }
+  js <- if (inherits(sf, "sf")) {
+    geojsonsf::sf_geojson(sf, simplify = FALSE)
+  } else {
+    json <- geojsonsf::sfc_geojson(sf)
+    paste0(
+      "{\"type\":\"GeometryCollection\",\"geometries\":[",
+      paste(json, collapse = ","),
+      "]}"
+    )
+  }
 
-    if (file) {
-      path <- tempfile(fileext = ".geojson")
-      writeLines(js, con = path)
-      js <- path
-    }
+  if (file) {
+    path <- tempfile(fileext = ".geojson")
+    writeLines(js, con = path)
+    js <- path
+  }
   structure(js, crs = crs)
 }
 
@@ -287,7 +359,7 @@ sp_to_spdf <- function(obj) {
   if (!any(cls)) {
     return(obj)
   }
-    as(obj, paste0(non_df_classes[as.logical(cls)], "DataFrame"))
+  as(obj, paste0(non_df_classes[as.logical(cls)], "DataFrame"))
 }
 
 #' Check the system mapshaper
@@ -308,26 +380,34 @@ check_sys_mapshaper <- function(command = "mapshaper-xl", verbose = TRUE) {
   min_ms_version <- package_version(bundled_ms_version()) # Update when updating bundled mapshaper.js
 
   if (sys_ms_version < min_ms_version) {
-    stop("You need to upgrade your system mapshaper library.\n",
-         "Update it with: 'npm update -g mapshaper")
+    stop(
+      "You need to upgrade your system mapshaper library.\n",
+      "Update it with: 'npm update -g mapshaper"
+    )
   }
   if (verbose) {
-    message("mapshaper version ", sys_ms_version, " is installed and on your PATH")
+    message(
+      "mapshaper version ",
+      sys_ms_version,
+      " is installed and on your PATH"
+    )
   }
-    ms_path
+  ms_path
 }
 
 sys_ms_path <- function(command) {
-  err_msg <- paste0("The mapshaper node library must be installed and on your PATH.\n",
-                    "Install node.js (https://nodejs.org/en/) and then install mapshaper with:\n",
-                    "    npm install -g mapshaper")
+  err_msg <- paste0(
+    "The mapshaper node library must be installed and on your PATH.\n",
+    "Install node.js (https://nodejs.org/en/) and then install mapshaper with:\n",
+    "    npm install -g mapshaper"
+  )
 
   ms_path <- Sys.which(command)
 
   if (!nzchar(ms_path)) {
     # try to find it:
     if (nzchar(Sys.which("npm"))) {
-      npm_prefix <- system2("npm",  "get prefix", stdout = TRUE)
+      npm_prefix <- system2("npm", "get prefix", stdout = TRUE)
       ms_path <- file.path(npm_prefix, "bin", command)
       if (!file.exists(ms_path)) stop(err_msg, call. = FALSE)
     } else {
@@ -344,23 +424,21 @@ sys_ms_version <- function() {
 bundled_ms_version <- function() {
   # ms <- ms_make_ctx()
   # ms$get("mapshaper.internal.VERSION")
-  "0.6.25"
+  "0.6.113"
 }
 
 ms_compact <- function(l) Filter(Negate(is.null), l)
 
-add_dummy_id_command <- function(sys) {
-  if (sys) {
-    cmd <- shQuote("rmapshaperid=this.id")
-  } else {
-    cmd <- "'rmapshaperid=this.id'"
-  }
-  paste("-each", cmd)
+fc_command <- function() {
+  "geojson-type=FeatureCollection"
 }
 
 class_geo_json <- function(x) {
   if (is.null(x)) {
-    warning("The command returned an empty response. Please check your inputs", call. = FALSE)
+    warning(
+      "The command returned an empty response. Please check your inputs",
+      call. = FALSE
+    )
     x <- list()
   }
   if (is.raw(x)) {
@@ -374,7 +452,9 @@ check_character_input <- function(x) {
   if (length(x) > 1) {
     x <- paste0(x, collapse = "")
   }
-  if (!jsonify::validate_json(x)) stop("Input is not valid geojson")
+  if (!jsonify::validate_json(x)) {
+    stop("Input is not valid geojson")
+  }
   x
 }
 
@@ -383,14 +463,21 @@ curly_brace_na <- function(x) {
   UseMethod("curly_brace_na")
 }
 
+#' @export
 curly_brace_na.data.frame <- function(x) {
-  chr_or_factor <- vapply(x, inherits, c("character", "factor"), FUN.VALUE = logical(1))
+  chr_or_factor <- vapply(
+    x,
+    inherits,
+    c("character", "factor"),
+    FUN.VALUE = logical(1)
+  )
   if (any(chr_or_factor)) {
     x[, chr_or_factor][x[, chr_or_factor] == "{ }"] <- NA
   }
   x
 }
 
+#' @export
 curly_brace_na.Spatial <- function(x) {
   x@data <- curly_brace_na(x@data)
   x
@@ -400,6 +487,8 @@ curly_brace_na.Spatial <- function(x) {
 # restores it after the data.frame method does its work, because
 # the sf column is 'sticky' with `[`.sf methods, so would be
 # included in the { } substitution if the sf class was kept
+
+#' @export
 curly_brace_na.sf <- function(x) {
   sf_col <- attr(x, "sf_column")
   class(x) <- setdiff(class(x), "sf")
@@ -411,7 +500,10 @@ col_classes <- function(df) {
   classes <- lapply(df, function(x) {
     out <- list()
     if (inherits(x, "POSIXlt")) {
-      stop("POSIXlt classes not supported. Please convert to POSIXct", call. = FALSE)
+      stop(
+        "POSIXlt classes not supported. Please convert to POSIXct",
+        call. = FALSE
+      )
     }
     out$class <- class(x)
     if (is.factor(x)) {
@@ -428,45 +520,52 @@ col_classes <- function(df) {
 }
 
 restore_classes <- function(df, classes) {
-
-  if ("rmapshaperid" %in% names(df)) {
-    nms <- ifelse(is(df, "sf") || is(df, "sfc"),
-                  setdiff(names(df), attr(df, "sf_column")),
-                  names(df))
-    if (length(nms) == 1 && nms == "rmapshaperid") {
-      classes$rmapshaperid <- list(class = "integer")
-      df$rmapshaperid <- as.integer(df$rmapshaperid)
-    } else {
-      df <- df[, setdiff(names(df), "rmapshaperid"), drop = FALSE]
-    }
-  }
-
   in_classes <- lapply(df, class)
 
   keep_in_both <- intersect(names(in_classes), names(classes))
   in_classes <- in_classes[keep_in_both]
 
-  class_matches <- vapply(names(in_classes), function(n) {
-    if ("sfc" %in% classes[[n]]$class) return(TRUE)
-    isTRUE(all.equal(classes[[n]]$class, in_classes[[n]]))
-  }, FUN.VALUE = logical(1))
+  class_matches <- vapply(
+    names(in_classes),
+    function(n) {
+      if ("sfc" %in% classes[[n]]$class) {
+        return(TRUE)
+      }
+      isTRUE(all.equal(classes[[n]]$class, in_classes[[n]]))
+    },
+    FUN.VALUE = logical(1)
+  )
 
   mismatches <- which(!class_matches)
-  if (length(mismatches) == 0) return(df)
+  if (length(mismatches) == 0) {
+    return(df)
+  }
 
   for (n in names(mismatches)) {
     cls <- classes[[n]]$class
     if ("factor" %in% cls) {
-      df[[n]] <- factor(df[[n]], levels = classes[[n]]$levels,
-                           ordered = classes[[n]]$ordered)
-    } else if (!"units" %in% cls) { # Skip units columns... TODO: Fix units parsing on return
+      df[[n]] <- factor(
+        df[[n]],
+        levels = classes[[n]]$levels,
+        ordered = classes[[n]]$ordered
+      )
+    } else if (!"units" %in% cls) {
+      # Skip units columns... TODO: Fix units parsing on return
       as_fun <- paste0("as.", cls[1])
-      tryCatch({
-        df[[n]] <- eval(call(as_fun, df[[n]]))
-      }, error = function(e) {
-        warning("Could not convert column ", names(df)[n], " to class ",
-                cls, ". Returning as ", paste(in_classes[[n]], collapse = ", "))
-      }
+      tryCatch(
+        {
+          df[[n]] <- eval(call(as_fun, df[[n]]))
+        },
+        error = function(e) {
+          warning(
+            "Could not convert column ",
+            names(df)[n],
+            " to class ",
+            cls,
+            ". Returning as ",
+            paste(in_classes[[n]], collapse = ", ")
+          )
+        }
       )
     }
   }
@@ -474,29 +573,34 @@ restore_classes <- function(df, classes) {
 }
 
 stop_for_old_v8 <- function() {
-  if (check_v8_major_version() < 6L) {
-  # nocov start
+  if (v8_version() < "6") {
+    # nocov start
     stop(
-      "Warning: v8 Engine is version ", V8::engine_info()[["version"]],
+      "Warning: v8 Engine is version ",
+      V8::engine_info()[["version"]],
       " but version >=6 is required for this function. See",
       " https://github.com/jeroen/V8 for help installing a modern version",
-      " of v8 on your operating system.")
+      " of v8 on your operating system."
+    )
   }
   # nocov end
 }
 
-check_v8_major_version <- function() {
-  engine_version <- V8::engine_info()[["version"]]
-  major_version <- as.integer(strsplit(engine_version, "\\.")[[1]][1])
-  major_version
+v8_version <- function() {
+  V8::engine_info()[["numeric_version"]]
 }
 
 temp_geojson <- function() {
   # This option is really just to allow testing strange paths like #107
   tmpdir <- getOption("ms_tempdir", default = tempdir())
   dir.create(tmpdir, showWarnings = FALSE)
-  normalizePath(tempfile(
-    tmpdir = tmpdir,
-    fileext = ".geojson"
-  ), mustWork = FALSE)
+  normalizePath(
+    tempfile(
+      tmpdir = tmpdir,
+      fileext = ".geojson"
+    ),
+    mustWork = FALSE
+  )
 }
+
+upkeep_bullets <- function() "Update bundled mapshaper node library."

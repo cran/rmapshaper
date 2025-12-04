@@ -6,7 +6,7 @@
 #'  \item \code{SpatialPolygons*};
 #'  \item \code{sf} or \code{sfc} polygons object
 #'  }
-#' @inheritDotParams apply_mapshaper_commands force_FC sys sys_mem quiet
+#' @inheritDotParams apply_mapshaper_commands force_FC sys sys_mem quiet gj2008
 #'
 #' @return lines in the same class as the input layer, but without attributes
 #'
@@ -53,7 +53,6 @@ ms_innerlines.character <- function(input, ...) {
   input <- check_character_input(input)
 
   apply_mapshaper_commands(data = input, command = "-innerlines", ...)
-
 }
 
 #' @export
@@ -63,12 +62,12 @@ ms_innerlines.json <- function(input, ...) {
 
 #' @export
 ms_innerlines.SpatialPolygons <- function(input, ...) {
-	ms_sp(as(input, "SpatialPolygons"), "-innerlines", ...)
+  ms_sp(as(input, "SpatialPolygons"), "-innerlines", ...)
 }
 
 #' @export
 ms_innerlines.sf <- function(input, ...) {
-  ms_sf(sf::st_geometry(input), "-innerlines", ...)
+  ms_sf(input, "-innerlines", ...)
 }
 
 
@@ -76,4 +75,3 @@ ms_innerlines.sf <- function(input, ...) {
 ms_innerlines.sfc <- function(input, ...) {
   ms_sf(input, "-innerlines", ...)
 }
-
