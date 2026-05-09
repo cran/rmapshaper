@@ -12,7 +12,7 @@
 
 <meta name="author" content="Andy Teucher" />
 
-<meta name="date" content="2025-12-03" />
+<meta name="date" content="2026-05-06" />
 
 <title>rmapshaper Basics</title>
 
@@ -341,7 +341,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">rmapshaper Basics</h1>
 <h4 class="author">Andy Teucher</h4>
-<h4 class="date">2025-12-03</h4>
+<h4 class="date">2026-05-06</h4>
 
 
 
@@ -435,7 +435,7 @@ contrived example, using <code>nc_sf</code> as created above:</p>
 <span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a></span>
 <span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="do">## First convert &#39;states&#39; dataframe from geojsonsf pkg to json</span></span>
 <span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>nc_sf <span class="sc">%&gt;%</span> </span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>nc_sf <span class="sc">|&gt;</span> </span>
 <span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="fu">sf_geojson</span>() <span class="sc">|&gt;</span> </span>
 <span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="fu">ms_erase</span>(<span class="at">bbox =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">80</span>, <span class="dv">35</span>, <span class="sc">-</span><span class="dv">79</span>, <span class="fl">35.5</span>)) <span class="sc">|&gt;</span>  <span class="co"># Cut a big hole in the middle</span></span>
 <span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="fu">ms_dissolve</span>() <span class="sc">|&gt;</span>  <span class="co"># Dissolve county borders</span></span>

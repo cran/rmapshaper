@@ -1,3 +1,7 @@
+# rmapshaper 0.6.1
+
+* Remove magrittr pipe from examples and replace with native pipe.
+
 # rmapshaper 0.6.0
 
 * Updated bundled mapshaper version to `v0.6.113` (#179).
